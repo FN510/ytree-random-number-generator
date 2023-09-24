@@ -46,21 +46,29 @@ public class RandomGen implements RandomGenerator {
    Returns one of the randomNums. When this method is called
    multiple times over a long period, it should return the
    numbers roughly with the initialized probabilities.
+    @implNote if no number is selected on an initial function call then the function will be called again.
+    This means a number will always be returned
    */
 
   @Override
   public int nextNum() {
-    // create a boolean for each number which is true if the number is selected
-    List<Map<Integer, Boolean>> numberSelections = new ArrayList<>(getRandomNums().length);
+    // create a boolean for each number which is set to true if the number is selected
+    List<Integer> numberSelections = new ArrayList<>(getRandomNums().length);
     SplittableRandom random = new SplittableRandom();
+    float randomFloat = random.nextFloat();
     for (int i = 0; i < getRandomNums().length; i++) {
-      boolean selected = random.nextFloat() < getProbabilities()[i]; // the probability this is true is equal to p[i]
-      numberSelections.add(Map.of(getRandomNums()[i], selected));
+      boolean selected = randomFloat < getProbabilities()[i]; // the probability this is true is equal to p[i]
+      if (selected) {
+        numberSelections.add(getRandomNums()[i]);
+      }
     }
-    // select one of the booleans that are true
+    if (numberSelections.size() == 0) { // none selected go again
+      return nextNum();
+    }
+    // choose a random index out of the selected array
     int chosenIndex = random.nextInt(numberSelections.size());
     // return value
-    return getRandomNums()[chosenIndex];
+    return numberSelections.get(chosenIndex);
   }
 
   public void setProbabilities(float[] probabilities) {
