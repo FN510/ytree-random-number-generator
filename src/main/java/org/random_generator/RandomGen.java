@@ -52,26 +52,23 @@ public class RandomGen implements RandomGenerator {
    */
 
   @Override
-  public int nextNum() {
-    // create a boolean for each number which is set to true if the number is selected
-    List<Integer> numberSelections = new ArrayList<>(getRandomNums().length);
+  public int nextNum() throws Exception {
+    // split the outcome space into regions for each number, the size of each region is p[i]
+    // start from 0 to p[0] for randNum[0], then p[0] to p[0]+p[1] for randNum[1] ..., p(n) to 1
     SplittableRandom random = new SplittableRandom();
     float randomFloat = random.nextFloat();
+    // initialise variables for sliding upper and lower bounds (between 0 and 1)
+    float lowerBound = 0;
+    float upperBound = 0;
     for (int i = 0; i < getRandomNums().length; i++) {
-      boolean selected = randomFloat < getProbabilities()[i]; // the probability this is true is equal to p[i]
+      upperBound = lowerBound + getProbabilities()[i];
+      boolean selected = randomFloat < upperBound && randomFloat >= lowerBound; // the probability this is true is equal to p[i]
       if (selected) {
-        numberSelections.add(getRandomNums()[i]);
-        // add more of lower probability numbers
-        numberSelections.addAll(Collections.nCopies(Math.round((1-getProbabilities()[i])*50), getRandomNums()[i]));
+        return getRandomNums()[i];
       }
+      lowerBound = upperBound;
     }
-    if (numberSelections.size() == 0) { // none selected go again
-      return nextNum();
-    }
-    // choose a random index out of the selected array
-    int chosenIndex = random.nextInt(numberSelections.size());
-    // return value
-    return numberSelections.get(chosenIndex);
+    throw new Exception("Error selecting a next num");
   }
 
   public void setProbabilities(float[] probabilities) {

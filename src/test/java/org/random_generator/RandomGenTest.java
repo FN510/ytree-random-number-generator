@@ -1,7 +1,6 @@
 package org.random_generator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +42,8 @@ class RandomGenTest {
   }
 
   @ParameterizedTest
-  @MethodSource("getParameters")
-  void nextNum(int[] randomNums, float[] probabilities, int count) {
+  @MethodSource("getParametersForGenerator")
+  void nextNum(int[] randomNums, float[] probabilities, int count) throws Exception {
     target = new RandomGen(randomNums, probabilities);
     Map<Integer, Integer> result = generateNumbers(target, count);
     for (Integer k: result.keySet().stream().sorted().collect(Collectors.toList())) {
@@ -70,9 +69,10 @@ class RandomGenTest {
     Assertions.assertTrue((totalDifferenceInCounts/(float)count) * 100 < 10f);
   }
 
-  private static Stream<Arguments> getParameters() {
+  private static Stream<Arguments> getParametersForGenerator() {
     return Stream.of(
-        Arguments.of(new int[]{3, 5, 4}, new float[]{0.1f, 0.5f, 0.4f}, 500)
+        Arguments.of(new int[]{3, 5, 4}, new float[]{0.1f, 0.5f, 0.4f}, 500),
+        Arguments.of(new int[]{1, 6, 7, 99}, new float[]{0.01f, 0.3f, 0.22f, 0.47f}, 500)
     );
   }
 
@@ -82,7 +82,7 @@ class RandomGenTest {
    * @param count the number of outcomes to be generated
    * @return
    */
-  public Map<Integer, Integer> generateNumbers(RandomGen generator, int count) {
+  public Map<Integer, Integer> generateNumbers(RandomGen generator, int count) throws Exception {
 
     if (generator.getRandomNums() == null || generator.getProbabilities() == null) {
       return Map.of();
