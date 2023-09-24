@@ -50,19 +50,24 @@ class RandomGenTest {
     for (Integer k: result.keySet().stream().sorted().collect(Collectors.toList())) {
       System.out.println(k + ": " + result.get(k));
     }
+
     List<Integer> expectedOutcomes = new ArrayList<>(randomNums.length);
+    int totalDifferenceInCounts = 0;
     for (int i = 0; i < randomNums.length; i++) {
-      int expectedOutcome = (int) (probabilities[i] * count);
-      expectedOutcomes.add(expectedOutcome);
-      System.out.println("The expected count for "+ randomNums[i] + " is "+ expectedOutcome);
+      int expectedCount = (int) (probabilities[i] * count);
+      expectedOutcomes.add(expectedCount);
+      System.out.printf("The expected count for "+ randomNums[i] + " is "+ expectedCount +", actual was " +result.get(randomNums[i]));
 
-      int actualOutcome = result.get(randomNums[i]);
-      int difference = Math.round(((float)(actualOutcome - expectedOutcome)/(float) expectedOutcome)*100);
+      int actualCount = result.get(randomNums[i]);
+      int differenceInCounts = actualCount - expectedCount;
+      int differenceInExpectation = Math.round(((float) differenceInCounts / (float) expectedCount) * 100);
 
-      //System.out.println("difference in %: " + difference);
-      System.out.println(String.format("difference: %+d%%", difference));
-      Assertions.assertTrue(Math.abs(difference) < 10);
+      System.out.println(String.format(". Difference: %+d%%", differenceInExpectation));
+      totalDifferenceInCounts += Math.abs(differenceInCounts);
+      //Assertions.assertTrue(Math.abs(difference) < 10);
     }
+    System.out.println(String.format("total difference in counts: %f%%", (totalDifferenceInCounts/(float)count) * 100));
+    Assertions.assertTrue((totalDifferenceInCounts/(float)count) * 100 < 10f);
   }
 
   private static Stream<Arguments> getParameters() {

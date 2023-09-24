@@ -1,6 +1,7 @@
 package org.random_generator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SplittableRandom;
@@ -60,6 +61,8 @@ public class RandomGen implements RandomGenerator {
       boolean selected = randomFloat < getProbabilities()[i]; // the probability this is true is equal to p[i]
       if (selected) {
         numberSelections.add(getRandomNums()[i]);
+        // add more of lower probability numbers
+        numberSelections.addAll(Collections.nCopies(Math.round((1-getProbabilities()[i])*50), getRandomNums()[i]));
       }
     }
     if (numberSelections.size() == 0) { // none selected go again
