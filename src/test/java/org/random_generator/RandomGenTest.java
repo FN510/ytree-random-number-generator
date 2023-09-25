@@ -63,7 +63,6 @@ class RandomGenTest {
 
       System.out.println(String.format(". Difference: %+d%%", differenceInExpectation));
       totalDifferenceInCounts += Math.abs(differenceInCounts);
-      //Assertions.assertTrue(Math.abs(difference) < 10);
     }
     System.out.println(String.format("total difference in counts: %f%%", (totalDifferenceInCounts/(float)count) * 100));
     Assertions.assertTrue((totalDifferenceInCounts/(float)count) * 100 < 10f);
