@@ -31,9 +31,17 @@ public class RandomGen implements RandomGenerator {
    *                      chosen
    * @throws IllegalArgumentException when {@code randomNums} and {@code probabilities} are not
    *                                  equal in length or when the sum of {@code probabilities} does
-   *                                  not equal 1
+   *                                  not equal 1, or when there are duplicates in {@code randomNums}
    */
   RandomGen(int[] randomNums, float[] probabilities) {
+    checkDuplicates(randomNums);
+    checkUnequalLengths(randomNums, probabilities);
+
+    setRandomNums(randomNums);
+    setProbabilities(probabilities);
+  }
+
+  private static void checkDuplicates(int[] randomNums) {
     Set<Integer> setOfRandomNums = new HashSet<>();
     for (int e : randomNums) {
       boolean duplicate = !setOfRandomNums.add(e);
@@ -41,14 +49,12 @@ public class RandomGen implements RandomGenerator {
         throw new IllegalArgumentException(DUPLICATE_NUMBER_ERROR_MESSAGE);
       }
     }
+  }
 
-    if (randomNums.length == probabilities.length) {
-      setRandomNums(randomNums);
-      setProbabilities(probabilities);
-    } else {
+  private static void checkUnequalLengths(int[] randomNums, float[] probabilities) {
+    if (randomNums.length != probabilities.length) {
       throw new IllegalArgumentException(UNEQUAL_LENGTH_OF_INPUTS_ERROR_MESSAGE);
     }
-
   }
 
   /**
