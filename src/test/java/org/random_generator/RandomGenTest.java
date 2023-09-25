@@ -12,6 +12,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static org.random_generator.RandomGen.DUPLICATE_NUMBER_ERROR_MESSAGE;
+import static org.random_generator.RandomGen.INVALID_SUM_OF_PROBABILITIES_ERROR_MESSAGE;
+import static org.random_generator.RandomGen.UNEQUAL_LENGTH_OF_INPUTS_ERROR_MESSAGE;
+
 
 class RandomGenTest {
 
@@ -31,14 +35,25 @@ class RandomGenTest {
   void shouldThrowErrorGivenSumOfProbabilitiesIsNotOne() {
     float[] invalidProbabilities = {1f, 0.2f, 0.3f, 0.05f, 0.35f}; // sum is over 1
     target = new RandomGen();
-    Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> target.setProbabilities(invalidProbabilities));
+    Assertions.assertThrowsExactly(IllegalArgumentException.class,
+        () -> target.setProbabilities(invalidProbabilities),
+        INVALID_SUM_OF_PROBABILITIES_ERROR_MESSAGE);
   }
 
   @Test
   void shouldThrowErrorGivenSumOfUnequalListLengths() {
-    float[] invalidProbabilities = {0.1f, 0.2f, 0.3f, 0.05f, 0.35f};
-    target = new RandomGen();
-    Assertions.assertThrowsExactly(IllegalArgumentException.class, () -> target.setProbabilities(invalidProbabilities));
+    int[] randomNums = {1, 2, 3};
+    float[] probabilities = {0.1f, 0.2f, 0.3f, 0.05f, 0.35f};
+    Assertions.assertThrowsExactly(IllegalArgumentException.class,
+        () -> new RandomGen(randomNums, probabilities), UNEQUAL_LENGTH_OF_INPUTS_ERROR_MESSAGE);
+  }
+
+  @Test
+  void shouldThrowErrorGivenDuplicateNumbers() {
+    int[] randomNums = {1, 2, 2};
+    float[] probabilities = {0.1f, 0.2f, 0.7f};
+    Assertions.assertThrowsExactly(IllegalArgumentException.class,
+        () -> new RandomGen(randomNums, probabilities), DUPLICATE_NUMBER_ERROR_MESSAGE);
   }
 
   @ParameterizedTest
@@ -46,7 +61,7 @@ class RandomGenTest {
   void nextNum(int[] randomNums, float[] probabilities, int count) throws Exception {
     target = new RandomGen(randomNums, probabilities);
     Map<Integer, Integer> result = generateNumbers(target, count);
-    for (Integer k: result.keySet().stream().sorted().collect(Collectors.toList())) {
+    for (Integer k : result.keySet().stream().sorted().collect(Collectors.toList())) {
       System.out.println(k + ": " + result.get(k));
     }
 
@@ -55,30 +70,33 @@ class RandomGenTest {
     for (int i = 0; i < randomNums.length; i++) {
       int expectedCount = (int) (probabilities[i] * count);
       expectedOutcomes.add(expectedCount);
-      System.out.printf("The expected count for "+ randomNums[i] + " is "+ expectedCount +", actual was " +result.get(randomNums[i]));
+      System.out.printf(
+          "The expected count for " + randomNums[i] + " is " + expectedCount + ", actual was "
+              + result.get(randomNums[i]));
 
       int actualCount = result.get(randomNums[i]);
       int differenceInCounts = actualCount - expectedCount;
-      int differenceInExpectation = Math.round(((float) differenceInCounts / (float) expectedCount) * 100);
+      int differenceInExpectation = Math.round(
+          ((float) differenceInCounts / (float) expectedCount) * 100);
 
       System.out.println(String.format(". Difference: %+d%%", differenceInExpectation));
       totalDifferenceInCounts += Math.abs(differenceInCounts);
     }
-    System.out.println(String.format("total difference in counts: %f%%", (totalDifferenceInCounts/(float)count) * 100));
-    Assertions.assertTrue((totalDifferenceInCounts/(float)count) * 100 < 10f);
+    System.out.println(String.format("total difference in counts: %f%%",
+        (totalDifferenceInCounts / (float) count) * 100));
+    Assertions.assertTrue((totalDifferenceInCounts / (float) count) * 100 < 10f);
   }
 
   private static Stream<Arguments> getParametersForGenerator() {
-    return Stream.of(
-        Arguments.of(new int[]{3, 5, 4}, new float[]{0.1f, 0.5f, 0.4f}, 500),
-        Arguments.of(new int[]{1, 6, 7, 99}, new float[]{0.01f, 0.3f, 0.22f, 0.47f}, 500)
-    );
+    return Stream.of(Arguments.of(new int[]{3, 5, 4}, new float[]{0.1f, 0.5f, 0.4f}, 500),
+        Arguments.of(new int[]{1, 6, 7, 99}, new float[]{0.01f, 0.3f, 0.22f, 0.47f}, 500));
   }
 
   /**
    * Function to call {@code nextNum} {@code count} number of times
+   *
    * @param generator an instance of randomGen with numbers and probabilities
-   * @param count the number of outcomes to be generated
+   * @param count     the number of outcomes to be generated
    * @return
    */
   public Map<Integer, Integer> generateNumbers(RandomGen generator, int count) throws Exception {
